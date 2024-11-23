@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易計算機</title>
+    <style>
+        .calculator {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        #display {
+            width: 100%;
+            height: 40px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            text-align: right;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 15px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #e9ecef;
+        }
+        
+        .operator {
+            background-color: #ff9f43;
+            color: white;
+        }
+        
+        .number {
+            background-color: #54a0ff;
+            color: white;
+        }
+        
+        .equals {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .clear {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* 新增歷史紀錄的樣式 */
+        .history-container {
+            width: 300px;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 5px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        /* 新增特殊函數按鈕樣式 */
+        .function {
+            background-color: #6c5ce7;
+            color: white;
+        }
+        
+        /* 讓特殊函數按鈕的文字小一點 */
+        .function {
+            font-size: 16px;
+        }
+        
+        /* 調整等號按鈕樣式 */
+        .equals {
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        /* 確保按鈕網格排列正確 */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" readonly>
+        <div class="buttons">
+            <!-- 第一行：清除和特殊功能 -->
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="function" onclick="calculateCircumference()">圓周長</button>
+            <button class="function" onclick="calculateArea()">圓面積</button>
+            <button class="operator" onclick="appendToDisplay('/')">/</button>
+            
+            <!-- 第二行：數字 7-9 和乘號 -->
+            <button class="number" onclick="appendToDisplay('7')">7</button>
+            <button class="number" onclick="appendToDisplay('8')">8</button>
+            <button class="number" onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('*')">×</button>
+            
+            <!-- 第三行：數字 4-6 和減號 -->
+            <button class="number" onclick="appendToDisplay('4')">4</button>
+            <button class="number" onclick="appendToDisplay('5')">5</button>
+            <button class="number" onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            
+            <!-- 第四行：數字 1-3 和加號 -->
+            <button class="number" onclick="appendToDisplay('1')">1</button>
+            <button class="number" onclick="appendToDisplay('2')">2</button>
+            <button class="number" onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            
+            <!-- 第五行：0、小數點、括號和等號 -->
+            <button class="number" onclick="appendToDisplay('0')">0</button>
+            <button class="number" onclick="appendToDisplay('.')">.</button>
+            <button onclick="appendToDisplay('(')">(</button>
+            <button onclick="appendToDisplay(')')">)</button>
+            
+            <!-- 第六行：等號獨占一行 -->
+            <button class="equals" onclick="calculate()" style="grid-column: span 4;">=</button>
+        </div>
+    </div>
+    
+    <!-- 新增歷史紀錄容器 -->
+    <div class="history-container" id="history">
+        <!-- 歷史紀錄會在這裡動態生成 -->
+    </div>
+
+    <script>
+        // 新增歷史紀錄陣列
+        let history = [];
+        const MAX_HISTORY = 100;
+
+        function appendToDisplay(value) {
+            document.getElementById('display').value += value;
+        }
+
+        function clearDisplay() {
+            document.getElementById('display').value = '';
+        }
+
+        function calculate() {
+            try {
+                const expression = document.getElementById('display').value;
+                const result = eval(expression);
+                document.getElementById('display').value = result;
+                
+                // 新增到歷史紀錄
+                addToHistory(`${expression} = ${result}`);
+            } catch (error) {
+                document.getElementById('display').value = '錯誤';
+            }
+        }
+
+        // 新增歷史紀錄函數
+        function addToHistory(record) {
+            history.unshift(record); // 新增到開頭
+            if (history.length > MAX_HISTORY) {
+                history.pop(); // 移除最舊的紀錄
+            }
+            updateHistoryDisplay();
+        }
+
+        // 更新歷史紀錄顯示
+        function updateHistoryDisplay() {
+            const historyContainer = document.getElementById('history');
+            historyContainer.innerHTML = history
+                .map((record, index) => `
+                    <div class="history-item" onclick="useHistory(${index})">
+                        ${record}
+                    </div>
+                `).join('');
+        }
+
+        // 使用歷史紀錄
+        function useHistory(index) {
+            const record = history[index];
+            const expression = record.split(' = ')[0]; // 取得運算式部分
+            document.getElementById('display').value = expression;
+        }
+
+        // 新增計算圓周長的函數
+        function calculateCircumference() {
+            const display = document.getElementById('display');
+            const radius = parseFloat(display.value);
+            
+            if (isNaN(radius)) {
+                display.value = '請輸入半徑';
+                return;
+            }
+            
+            if (radius < 0) {
+                display.value = '半徑不能為負數';
+                return;
+            }
+            
+            const circumference = 2 * Math.PI * radius;
+            display.value = circumference.toFixed(2);
+            
+            // 新增到歷史紀錄
+            addToHistory(`圓周長(r=${radius}) = ${circumference.toFixed(2)}`);
+        }
+
+        // 新增計算圓面積的函數
+        function calculateArea() {
+            const display = document.getElementById('display');
+            const radius = parseFloat(display.value);
+            
+            if (isNaN(radius)) {
+                display.value = '請輸入半徑';
+                return;
+            }
+            
+            if (radius < 0) {
+                display.value = '半徑不能為負數';
+                return;
+            }
+            
+            const area = Math.PI * radius * radius;
+            display.value = area.toFixed(2);
+            
+            // 新增到歷史紀錄
+            addToHistory(`圓面積(r=${radius}) = ${area.toFixed(2)}`);
+        }
+
+        // 更新鍵盤事件處理
+        document.addEventListener('keydown', function(event) {
+            // 數字鍵 0-9
+            if (/^[0-9]$/.test(event.key)) {
+                appendToDisplay(event.key);
+            }
+            // 運算符號
+            else if (['+', '-', '*', '/', '(', ')'].includes(event.key)) {
+                appendToDisplay(event.key);
+            }
+            // 小數點
+            else if (event.key === '.') {
+                appendToDisplay('.');
+            }
+            // Enter 鍵或 = 鍵計算結果
+            else if (event.key === 'Enter' || event.key === '=') {
+                calculate();
+            }
+            // Escape 鍵或 Delete 鍵清除
+            else if (event.key === 'Escape' || event.key === 'Delete') {
+                clearDisplay();
+            }
+            // Backspace 鍵刪除最後一個字符
+            else if (event.key === 'Backspace') {
+                const display = document.getElementById('display');
+                display.value = display.value.slice(0, -1);
+            }
+            // 新增 'c' 鍵快捷鍵計算圓周長
+            else if (event.key.toLowerCase() === 'c' && event.ctrlKey) {
+                calculateCircumference();
+            }
+            // 新增 'a' 鍵快捷鍵計算圓面積
+            else if (event.key.toLowerCase() === 'a' && event.ctrlKey) {
+                calculateArea();
+            }
+        });
+    </script>
+</body>
+</html> 
